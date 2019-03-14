@@ -43,6 +43,19 @@ namespace Heart
             return infos;
         }
 
+        static void Shuffle(List<HealthInfo> healthInfos)
+        {
+            var rand = new Random();
+            for (int i = 0; i < healthInfos.Count; i++)
+            {
+                int firstIndex = rand.Next() % healthInfos.Count;
+                var info = healthInfos[firstIndex];
+                int secondIndex = rand.Next() % healthInfos.Count;
+                healthInfos[firstIndex] = healthInfos[secondIndex];
+                healthInfos[secondIndex] = info;
+            }
+        }
+
         static void Main(string[] args)
         {
             var data = DeserialiseData("../../../heart.csv");
@@ -63,6 +76,7 @@ namespace Heart
             {
                 for (int i = 0; i < 10; i++)
                 {
+                    Shuffle(data);
                     agent.AddData(data);
                 }
 
@@ -88,25 +102,8 @@ namespace Heart
                 }
                 nbRunSinceLastSuccess++;
 
-                if (nbRunSinceLastSuccess >= 250)
-                {
-                    Random r = new Random();
-                    if (r.Next() % 3 > 0)
-                    {
-                        agent = new Agent<HealthInfo>(agent);
-                        Console.WriteLine($"New agent with transfert of knowledge");
-                    }
-                    else
-                    {
-                        agent = new Agent<HealthInfo>();
-                        Console.WriteLine($"New Agent at run {run}");
-                    }
-                    
-                    
-                    nbRunSinceLastSuccess = 0;
-                    nbAgent++;
-                }
-                
+                Console.WriteLine($"New Agent at run {run}");
+
                 run++;
                 Nbsucces = 0;
             }
