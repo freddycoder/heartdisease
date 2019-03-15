@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
+using System.Linq;
 
 namespace Genetic
 {
@@ -146,12 +146,12 @@ namespace Genetic
 
         public T getBestIndividual()
         {
-            return this.currentPopulation.getIndividualAtIndex(0);
+            return this.currentPopulation.Max();
         }
 
         public T getWorstIndividual()
         {
-            return this.currentPopulation.getIndividualAtIndex(this.populationSize - 1);
+            return this.currentPopulation.Min();
         }
 
         public void startForTimeInMilliSeconds(long timeInMilliSeconds)

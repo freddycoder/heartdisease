@@ -8,6 +8,8 @@ namespace Genetic
     {
         private double fitnessScore;
 
+        public abstract T getT();
+
         public abstract List<T> crossover(Individual<T> otherParent);
 
         public abstract void mutate();

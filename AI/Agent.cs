@@ -3,27 +3,47 @@ using Genetic;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
+using System.Reflection;
 
 namespace AI
 {
     public class Agent<DataModel> where DataModel : IData
     {
-        private GeneticAlgorithm<Factor> GeneticAlgorithm { get; set; }
+        private GeneticAlgorithm<Factor> G { get; set; }
+
+        private PropertyInfo[] _dataModelFields;
 
         public Agent()
         {
-            GeneticAlgorithm = new GeneticAlgorithm<Factor>(
+            _dataModelFields = typeof(DataModel).GetProperties()
+                .Where(p => p.Name != "Target").ToArray();
+
+            G = new GeneticAlgorithm<Factor>(
                 typeof(DataModel).GetProperties().Length - 1,
                 0.25,
                 0.01,
                 0.80,
                 0.02,
-                new FactorGenerator());
+                new FactorGenerator(150));
         }
 
-        public void AddData(List<DataModel> datas)
+        public void Train(List<DataModel> datas)
         {
-            GeneticAlgorithm.startForGenerationCount(10);
+            for (int i = 0; i < datas.Count; i++)
+            {
+                var goolPred = false;
+
+                if (MakePrediction(datas[i])) goolPred = true;
+
+                foreach (var x in G.getCurrentPopulation())
+                {
+                    if (goolPred) x.nbGoodExperiences++;
+                    x.nbExperiences++;
+                }
+            }
+
+            G.startForGenerationCount(1);
         }
 
         public bool MakePrediction(DataModel data)
@@ -44,9 +64,19 @@ namespace AI
         {
             double val = 0;
 
-            for (int i = GeneticAlgorithm.getPopulationSize() - 1; i >= 0; i--)
+            for (int i = G.getPopulationSize() - 1; i >= 0; i--)
             {
-                val += Math.Pow(GeneticAlgorithm.getCurrentPopulation().getIndividualAtIndex(i).value, i);
+                double propValue = 0.0;
+                if (_dataModelFields[i].PropertyType.Equals(typeof(double)))
+                {
+                    propValue = (double)_dataModelFields[i].GetValue(data);
+                }
+                else
+                {
+                    propValue = (int)_dataModelFields[i].GetValue(data);
+                }
+
+                val += G.getCurrentPopulation().getIndividualAtIndex(i).value * Math.Pow(propValue, i);
             }
 
             return val;
@@ -59,9 +89,9 @@ namespace AI
             sb.Append("Index\t | Factor\t\t");
             sb.Append(Environment.NewLine);
 
-            for (int i = 0; i < GeneticAlgorithm.getCurrentPopulation().size(); i++)
+            for (int i = 0; i < G.getCurrentPopulation().size(); i++)
             {
-                sb.Append($"{i}\t | {GeneticAlgorithm.getCurrentPopulation().getIndividualAtIndex(i)}\t");
+                sb.Append($"{i}\t | {G.getCurrentPopulation().getIndividualAtIndex(i).getT().value}\t");
                 sb.Append(Environment.NewLine);
             }
 

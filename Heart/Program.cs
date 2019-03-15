@@ -77,7 +77,7 @@ namespace Heart
                 for (int i = 0; i < 10; i++)
                 {
                     Shuffle(data);
-                    agent.AddData(data);
+                    agent.Train(data);
                 }
 
                 foreach (var item in data)
@@ -88,7 +88,7 @@ namespace Heart
                     }
                 }
 
-                if (Nbsucces >= bestNbSuccess)
+                if (Nbsucces > bestNbSuccess)
                 {
                     Console.WriteLine($"Last best result at : {DateTime.Now.ToString()}");
                     Console.WriteLine($"The agent made {Nbsucces} prediction succefully on a total of {data.Count} at run {run}.");
@@ -102,7 +102,12 @@ namespace Heart
                 }
                 nbRunSinceLastSuccess++;
 
-                Console.WriteLine($"New Agent at run {run}");
+                if (nbRunSinceLastSuccess > 350)
+                {
+                    agent = new Agent<HealthInfo>();
+                    Console.WriteLine($"New agent at run {run}");
+                    nbRunSinceLastSuccess = 0;
+                }
 
                 run++;
                 Nbsucces = 0;

@@ -82,19 +82,7 @@ namespace Genetic
 
         public void sortPopulationByFitness()
         {
-            SortedSet<T> sortedList = new SortedSet<T>();
-
-            for (int i = 0; i < population.Count; i++)
-            {
-                sortedList.Add(population[i]);
-            }
-
-            population.Clear();
-
-            foreach (var indiv in sortedList)
-            {
-                population.Add(indiv);
-            }
+            this.population.Sort();
         }
 
         public IEnumerator<T> GetEnumerator()
