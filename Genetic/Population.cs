@@ -94,6 +94,24 @@ namespace Genetic
         {
             return GetEnumerator();
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("[");
+
+            foreach (var elem in this)
+            {
+                sb.Append(elem.ToString());
+                sb.Append(",");
+            }
+
+            sb.Remove(sb.Length - 1, 1);
+            sb.Append("]");
+
+            return sb.ToString();
+        }
     }
 }
 

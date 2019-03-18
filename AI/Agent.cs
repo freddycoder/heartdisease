@@ -1,101 +1,155 @@
 ﻿using AI.Genetics;
-using Genetic;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.Reflection;
+using QLearning;
+using AI.Reinforcement;
 
 namespace AI
 {
-    public class Agent<DataModel> where DataModel : IData
+    public class Agent<DataModel> : IAgent<Reinforcement.Action, State, Reward> where DataModel : IData
     {
-        private GeneticAlgorithm<Factor> G { get; set; }
+        private IEnumerable<DataModel> _dataSet;
 
         private PropertyInfo[] _dataModelFields;
 
-        public Agent()
+        private AG G;
+
+        private readonly double [][] Q;
+
+        private long time;
+
+        private Random _randEngine;
+
+        public Agent(IEnumerable<DataModel> dataModels)
         {
+            _randEngine = new Random();
+
             _dataModelFields = typeof(DataModel).GetProperties()
                 .Where(p => p.Name != "Target").ToArray();
 
-            G = new GeneticAlgorithm<Factor>(
+            _dataSet = dataModels;
+
+            G = new AG(
                 typeof(DataModel).GetProperties().Length - 1,
                 0.25,
                 0.01,
                 0.80,
                 0.02,
                 new FactorGenerator(150));
-        }
 
-        public void Train(List<DataModel> datas)
-        {
-            for (int i = 0; i < datas.Count; i++)
+            Q = new double[100][];
+
+            for (int i = 0; i < 100; i++)
             {
-                var goolPred = false;
+                Q[i] = new double[100];
 
-                if (MakePrediction(datas[i])) goolPred = true;
-
-                foreach (var x in G.getCurrentPopulation())
+                for (int j = 0; j < 100; j++)
                 {
-                    if (goolPred) x.nbGoodExperiences++;
-                    x.nbExperiences++;
+                    Q[i][j] = _randEngine.NextDouble();
                 }
             }
-
-            G.startForGenerationCount(1);
         }
 
-        public bool MakePrediction(DataModel data)
+        public bool Predict(DataModel data)
         {
-            var result = Calculate(data);
+            double answer = 0;
 
-            if (result > 0)
+            for (int i = 0; i < _dataModelFields.Length; i++)
             {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private double Calculate(DataModel data)
-        {
-            double val = 0;
-
-            for (int i = G.getPopulationSize() - 1; i >= 0; i--)
-            {
-                double propValue = 0.0;
+                double dataValue = 0;
                 if (_dataModelFields[i].PropertyType.Equals(typeof(double)))
                 {
-                    propValue = (double)_dataModelFields[i].GetValue(data);
+                    dataValue = (double)_dataModelFields[i].GetValue(data);
                 }
                 else
                 {
-                    propValue = (int)_dataModelFields[i].GetValue(data);
+                    dataValue = (int)_dataModelFields[i].GetValue(data);
                 }
 
-                val += G.getCurrentPopulation().getIndividualAtIndex(i).value * Math.Pow(propValue, i);
+                answer += G.getCurrentPopulation().getIndividualAtIndex(i).value * Math.Pow(dataValue, i);
             }
 
-            return val;
+            return answer > 0;
+        }
+
+        public void Train()
+        {
+            ReceiveReward(
+                G.RecieveAction(
+                    Action(G.State)));
+        }
+
+        public Reinforcement.Action Action(State state)
+        {
+            int minIndex = 50;
+            double minValue = double.MaxValue;
+            int maxIndex = 50;
+            double maxValue = double.MinValue;
+
+            double uniMin = 0;
+            double uniMax = 0;
+
+            for (int i = 0; i < Q.Length; i++)
+            {
+                for (int j = 0; j < Q[i].Length; j++)
+                {
+                    if (minValue > Q[i][j])
+                    {
+                        minValue = Q[i][j];
+                        minIndex = i;
+                        uniMin = j;
+                    }
+                    if (maxValue < Q[i][j])
+                    {
+                        maxValue = Q[i][j];
+                        maxIndex = i;
+                        uniMax = j;
+                    }
+                }
+            }
+
+            var newState = G.State;
+
+            var r = _randEngine.Next(10000);
+
+            double choice = 0.0;
+            double choiceUni = 0.0;
+            if (r < 10000 + time++ * -0.5)
+            {
+                choice = minIndex / 100.0;
+                choiceUni = uniMin / 100.0;
+            }
+            else
+            {
+                choice = maxIndex / 100.0;
+                choiceUni = uniMax / 100.0;
+            }
+
+            newState.MutationRatio = choice;
+            newState.UniformityRatio = choiceUni;
+
+            return new Reinforcement.Action { NewState = newState, NbGeneration = 1 };
+        }
+
+        public void ReceiveReward(Reward reward)
+        {
+            for (int i = 0; i < G.getCurrentPopulation().size(); i++)
+            {
+                G.getCurrentPopulation().getIndividualAtIndex(i)
+                    .nbExperiences += reward.GetNbTotalQuestion();
+
+                G.getCurrentPopulation().getIndividualAtIndex(i)
+                    .nbGoodExperiences += reward.GetNbGoodAnswer();
+            }
+
+            Q[(int)G.State.MutationRatio * 100][(int)G.State.UniformityRatio * 100] += reward.GetReward();
         }
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append("Index\t | Factor\t\t");
-            sb.Append(Environment.NewLine);
-
-            for (int i = 0; i < G.getCurrentPopulation().size(); i++)
-            {
-                sb.Append($"{i}\t | {G.getCurrentPopulation().getIndividualAtIndex(i).getT().value}\t");
-                sb.Append(Environment.NewLine);
-            }
-
-            return sb.ToString();
+            return this.G.ToString();
         }
     }
 }

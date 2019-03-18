@@ -1,4 +1,5 @@
 ﻿using AI;
+using AI.Genetics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -56,64 +57,62 @@ namespace Heart
             }
         }
 
+        static void Print(object thing = null, bool endl = true)
+        {
+            if (thing != null) Console.Out.Write(thing.ToString());
+            if (endl) Console.Out.WriteLine();
+        }
+
         static void Main(string[] args)
         {
             var data = DeserialiseData("../../../heart.csv");
 
-            var agent = new Agent<HealthInfo>();
+            int nbGoodPrediction = 0;
 
-            int Nbsucces = 0;
+            var agent = new Agent<HealthInfo>(data);
 
-            int bestNbSuccess = 0;
+            int nbLoop = 0;
 
-            int run = 0;
+            double lastBestScore = 0;
 
-            int nbRunSinceLastSuccess = 0;
-
-            int nbAgent = 1;
-
-            while (Nbsucces != data.Count)
+            while (nbGoodPrediction != data.Count)
             {
-                for (int i = 0; i < 10; i++)
+                int goodAnswer = 0;
+                foreach (var d in data)
                 {
-                    Shuffle(data);
-                    agent.Train(data);
-                }
-
-                foreach (var item in data)
-                {
-                    if (agent.MakePrediction(item) == (item.Target == 1))
+                    if (agent.Predict(d) == d.Target > 0)
                     {
-                        Nbsucces++;
+                        goodAnswer++;
                     }
                 }
 
-                if (Nbsucces > bestNbSuccess)
+                if (lastBestScore < (double)goodAnswer / data.Count)
                 {
-                    Console.WriteLine($"Last best result at : {DateTime.Now.ToString()}");
-                    Console.WriteLine($"The agent made {Nbsucces} prediction succefully on a total of {data.Count} at run {run}.");
+                    Print("The agent beat is score at " + DateTime.Now.ToString());
 
-                    Console.WriteLine($"The Agent spec");
-                    Console.WriteLine(agent.ToString());
+                    Print("The score of the agent is : " + (double)goodAnswer / data.Count);
 
-                    bestNbSuccess = Nbsucces;
+                    Print(agent);
 
-                    nbRunSinceLastSuccess = -1;
-                }
-                nbRunSinceLastSuccess++;
-
-                if (nbRunSinceLastSuccess > 350)
-                {
-                    agent = new Agent<HealthInfo>();
-                    Console.WriteLine($"New agent at run {run}");
-                    nbRunSinceLastSuccess = 0;
+                    Print();
                 }
 
-                run++;
-                Nbsucces = 0;
+                agent.ReceiveReward(new AI.Reinforcement.Reward(goodAnswer, data.Count));
+
+                agent.Train();
+
+                nbGoodPrediction = goodAnswer;
+
+                nbLoop++;
+
+                if (nbLoop == 1000)
+                {
+                    Print();
+                }
             }
 
-            Console.Write($"The tranning is complete after {run} run and {nbAgent} agents");
+            Print("The agent succed! After " + nbLoop);
+
             Console.ReadLine();
         }
     }

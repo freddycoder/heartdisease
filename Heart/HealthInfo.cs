@@ -97,7 +97,5 @@ namespace Heart
 
             return sb.ToString();
         }
-
-        
     }
 }

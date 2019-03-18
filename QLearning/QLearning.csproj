@@ -7,9 +7,4 @@
     <StartupObject />
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Genetic\Genetic.csproj" />
-    <ProjectReference Include="..\QLearning\QLearning.csproj" />
-  </ItemGroup>
-
 </Project>
