@@ -29,7 +29,7 @@ namespace AI.Genetics
 
             startForGenerationCount(action.NbGeneration);
 
-            return new Reward(Math.Pow(this.getBestFitnessScore(), 2));
+            return new Reward(Math.Pow(this.getBestFitnessScore(), 2) - 0.5);
         }
 
         public override string ToString()

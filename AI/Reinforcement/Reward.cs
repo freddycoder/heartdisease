@@ -13,7 +13,7 @@ namespace AI.Reinforcement
 
         public Reward(int goodAnswer, int totalQuestion)
         {
-            this.reward = goodAnswer / totalQuestion;
+            this.reward = (double)goodAnswer / totalQuestion;
             this.nbGoodAnswer = goodAnswer;
             this.nbTotalQuestion = totalQuestion;
         }

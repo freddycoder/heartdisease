@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.438
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28711.60
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Heart", "Heart\Heart.csproj", "{E1EB1163-777F-4090-884F-5952EEF8D046}"
 EndProject
@@ -10,6 +10,14 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genetic", "Genetic\Genetic.csproj", "{A5586F1D-E921-4164-8AFD-0E209EF2CC31}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QLearning", "QLearning\QLearning.csproj", "{C98DDDA9-B5E9-4BD5-9931-22CCA650590A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stats", "Stats\Stats.csproj", "{3A83641F-7D07-4544-A755-6E36CE7F6CAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stats.Test", "Stats.Test\Stats.Test.csproj", "{C9875B35-0439-4B68-88C3-AF3FFFDC2EC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI.Test", "AI.Test\AI.Test.csproj", "{E2FB6B04-8A51-4042-B217-23E796C318CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genetic.Test", "Genetic.Test\Genetic.Test.csproj", "{ABCF5E36-8548-4101-A00A-5AB2626EB6DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +41,22 @@ Global
 		{C98DDDA9-B5E9-4BD5-9931-22CCA650590A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C98DDDA9-B5E9-4BD5-9931-22CCA650590A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C98DDDA9-B5E9-4BD5-9931-22CCA650590A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A83641F-7D07-4544-A755-6E36CE7F6CAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A83641F-7D07-4544-A755-6E36CE7F6CAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A83641F-7D07-4544-A755-6E36CE7F6CAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A83641F-7D07-4544-A755-6E36CE7F6CAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9875B35-0439-4B68-88C3-AF3FFFDC2EC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9875B35-0439-4B68-88C3-AF3FFFDC2EC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9875B35-0439-4B68-88C3-AF3FFFDC2EC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9875B35-0439-4B68-88C3-AF3FFFDC2EC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2FB6B04-8A51-4042-B217-23E796C318CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2FB6B04-8A51-4042-B217-23E796C318CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2FB6B04-8A51-4042-B217-23E796C318CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2FB6B04-8A51-4042-B217-23E796C318CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABCF5E36-8548-4101-A00A-5AB2626EB6DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABCF5E36-8548-4101-A00A-5AB2626EB6DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABCF5E36-8548-4101-A00A-5AB2626EB6DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABCF5E36-8548-4101-A00A-5AB2626EB6DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

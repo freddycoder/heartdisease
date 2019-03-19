@@ -1,5 +1,4 @@
 ﻿using AI;
-using AI.Genetics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -69,6 +68,12 @@ namespace Heart
 
             int nbGoodPrediction = 0;
 
+            data = new List<HealthInfo>()
+            {
+                data.First(d => d.Target == 0),
+                data.First(d => d.Target == 1)
+            };
+
             var agent = new Agent<HealthInfo>(data);
 
             int nbLoop = 0;
@@ -95,6 +100,8 @@ namespace Heart
                     Print(agent);
 
                     Print();
+
+                    lastBestScore = (double)goodAnswer / data.Count;
                 }
 
                 agent.ReceiveReward(new AI.Reinforcement.Reward(goodAnswer, data.Count));
@@ -105,10 +112,18 @@ namespace Heart
 
                 nbLoop++;
 
-                if (nbLoop == 1000)
+                if (nbLoop % 250 == 0 || true)
                 {
+                    Print("The agent state at " + DateTime.Now.ToString());
+
+                    Print("The score of the agent is : " + (double)goodAnswer / data.Count);
+
+                    Print(agent);
+
                     Print();
                 }
+
+                goodAnswer = 0;
             }
 
             Print("The agent succed! After " + nbLoop);

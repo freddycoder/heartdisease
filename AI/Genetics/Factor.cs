@@ -21,7 +21,11 @@ namespace AI.Genetics
 
         public override void calculateFitness()
         {
-            this.setFitnessScore(Math.Pow(nbExperiences != 0 ? nbGoodExperiences / nbExperiences : 0, 2));
+            if (nbExperiences == 0) return;
+
+            double score = nbGoodExperiences / nbExperiences;
+
+            this.setFitnessScore(Math.Pow(score, 2) - 0.25);
         }
 
         public override List<Factor> crossover(Individual<Factor> otherParent)
@@ -58,7 +62,7 @@ namespace AI.Genetics
 
         public override string ToString()
         {
-            return $"Value: {value} GoodExp: {nbExperiences} NbExp: {nbExperiences} Fitness: {getFitnessScore()}";
+            return $"Value: {value} GoodExp: {nbGoodExperiences} NbExp: {nbExperiences} Fitness: {getFitnessScore()}";
         }
     }
 }

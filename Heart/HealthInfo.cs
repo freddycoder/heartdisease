@@ -8,6 +8,7 @@ namespace Heart
 {
     public class HealthInfo : IData
     {
+        public HealthInfo() { }
         public HealthInfo(string textLine)
         {
             var text = textLine.Split(",");

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using QLearning;
 using AI.Reinforcement;
+using Stats;
 
 namespace AI
 {
@@ -16,7 +17,7 @@ namespace AI
 
         private AG G;
 
-        private readonly double [][] Q;
+        private ContinueVariableList<ContinueVariableList<double>> Q;
 
         private long time;
 
@@ -33,23 +34,27 @@ namespace AI
 
             G = new AG(
                 typeof(DataModel).GetProperties().Length - 1,
-                0.25,
-                0.01,
-                0.80,
-                0.02,
+                _randEngine.NextDouble(),
+                _randEngine.NextDouble(),
+                _randEngine.NextDouble(),
+                _randEngine.NextDouble(),
                 new FactorGenerator(150));
 
-            Q = new double[100][];
+            var subQ = new List<dynamic>(100);
 
             for (int i = 0; i < 100; i++)
             {
-                Q[i] = new double[100];
+                var doubles = new List<dynamic>(100);
 
                 for (int j = 0; j < 100; j++)
                 {
-                    Q[i][j] = _randEngine.NextDouble();
+                    doubles.Add(0.0);
                 }
+
+                subQ.Add(doubles);
             }
+
+            Q = new ContinueVariableList<ContinueVariableList<double>>(subQ);
         }
 
         public bool Predict(DataModel data)
@@ -88,24 +93,24 @@ namespace AI
             int maxIndex = 50;
             double maxValue = double.MinValue;
 
-            double uniMin = 0;
-            double uniMax = 0;
+            int rankMin = 0;
+            int rankMax = 0;
 
-            for (int i = 0; i < Q.Length; i++)
+            for (int i = 0; i < Q.Count; i++)
             {
-                for (int j = 0; j < Q[i].Length; j++)
+                for (int j = 0; j < Q[i].Count; j++)
                 {
                     if (minValue > Q[i][j])
                     {
                         minValue = Q[i][j];
                         minIndex = i;
-                        uniMin = j;
+                        rankMin = j;
                     }
                     if (maxValue < Q[i][j])
                     {
                         maxValue = Q[i][j];
                         maxIndex = i;
-                        uniMax = j;
+                        rankMax = j;
                     }
                 }
             }
@@ -119,16 +124,16 @@ namespace AI
             if (r < 10000 + time++ * -0.5)
             {
                 choice = minIndex / 100.0;
-                choiceUni = uniMin / 100.0;
+                choiceUni = rankMin / 100.0;
             }
             else
             {
                 choice = maxIndex / 100.0;
-                choiceUni = uniMax / 100.0;
+                choiceUni = rankMax / 100.0;
             }
 
-            newState.MutationRatio = choice;
-            newState.UniformityRatio = choiceUni;
+            newState.MutationRatio = choice + 0.01;
+            newState.RankSpaceRatio = choiceUni + 0.01;
 
             return new Reinforcement.Action { NewState = newState, NbGeneration = 1 };
         }
@@ -144,7 +149,7 @@ namespace AI
                     .nbGoodExperiences += reward.GetNbGoodAnswer();
             }
 
-            Q[(int)G.State.MutationRatio * 100][(int)G.State.UniformityRatio * 100] += reward.GetReward();
+            Q[((int)(G.State.MutationRatio - 0.01)) * 100][((int)(G.State.RankSpaceRatio - 0.01)) * 100] += reward.GetReward();
         }
 
         public override string ToString()
