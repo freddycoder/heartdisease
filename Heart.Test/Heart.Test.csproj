@@ -13,8 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AI\AI.csproj" />
-    <ProjectReference Include="..\Genetic\Genetic.csproj" />
     <ProjectReference Include="..\Heart\Heart.csproj" />
   </ItemGroup>
 

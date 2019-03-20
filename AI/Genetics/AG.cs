@@ -29,12 +29,25 @@ namespace AI.Genetics
 
             startForGenerationCount(action.NbGeneration);
 
-            return new Reward(Math.Pow(this.getBestFitnessScore(), 2) - 0.5);
+            return null;
         }
 
         public override string ToString()
         {
             return $"AG Setings : {getMutationRatio()} {getRankSpaceRatio()} {getGenerationCount()} AG pop : {getCurrentPopulation().ToString()}";
+        }
+
+        public dynamic[] GetPopVector()
+        {
+            var pop = new dynamic[getCurrentPopulation().size()];
+
+            int i = 0;
+            foreach (var indiv in getCurrentPopulation())
+            {
+                pop[i++] = indiv.value;
+            }
+
+            return pop;
         }
     }
 }

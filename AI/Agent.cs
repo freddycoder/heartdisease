@@ -6,6 +6,7 @@ using System.Reflection;
 using QLearning;
 using AI.Reinforcement;
 using Stats;
+using Functions;
 
 namespace AI
 {
@@ -23,6 +24,8 @@ namespace AI
 
         private Random _randEngine;
 
+        private IFunction _predictor;
+
         public Agent(IEnumerable<DataModel> dataModels)
         {
             _randEngine = new Random();
@@ -34,10 +37,10 @@ namespace AI
 
             G = new AG(
                 typeof(DataModel).GetProperties().Length - 1,
-                _randEngine.NextDouble(),
-                _randEngine.NextDouble(),
-                _randEngine.NextDouble(),
-                _randEngine.NextDouble(),
+                0.5,
+                0.5,
+                0.5,
+                0.5,
                 new FactorGenerator(150));
 
             var subQ = new List<dynamic>(100);
@@ -55,35 +58,49 @@ namespace AI
             }
 
             Q = new ContinueVariableList<ContinueVariableList<double>>(subQ);
+
+            _predictor = new VectorMultiplication();
         }
 
         public bool Predict(DataModel data)
         {
-            double answer = 0;
+            dynamic[] vector = new dynamic[G.getCurrentPopulation().size()];
 
-            for (int i = 0; i < _dataModelFields.Length; i++)
+            for (int i = 0; i < G.getCurrentPopulation().size(); i++)
             {
-                double dataValue = 0;
-                if (_dataModelFields[i].PropertyType.Equals(typeof(double)))
-                {
-                    dataValue = (double)_dataModelFields[i].GetValue(data);
-                }
-                else
-                {
-                    dataValue = (int)_dataModelFields[i].GetValue(data);
-                }
-
-                answer += G.getCurrentPopulation().getIndividualAtIndex(i).value * Math.Pow(dataValue, i);
+                vector[i] = G.getCurrentPopulation().getIndividualAtIndex(i).value;
             }
 
-            return answer > 0;
+            return _predictor.F(vector, data.ToArray().SkipLast(1).ToArray()) > 0;
         }
 
-        public void Train()
+        public void Train(Func<Agent<DataModel>, bool> whenToStop)
         {
-            ReceiveReward(
-                G.RecieveAction(
-                    Action(G.State)));
+            while (!whenToStop.Invoke(this))
+            {
+                lastTrainGoodResult = 0;
+                foreach (var d in _dataSet)
+                {
+                    if (Predict(d) == d.Target > 0)
+                    {
+                        lastTrainGoodResult++;
+                    }
+                }
+
+                ReceiveReward(new Reward(lastTrainGoodResult, _dataSet.Count()));
+
+                var newAction = Action(G.State);
+
+                G.RecieveAction(newAction);
+            }
+        }
+
+        private int lastTrainGoodResult;
+        private int lastTrainNbObj;
+
+        public double TrainingScore()
+        {
+            return (double)lastTrainGoodResult / lastTrainNbObj;
         }
 
         public Reinforcement.Action Action(State state)

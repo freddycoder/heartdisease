@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Stats
 {
-    public class ContinueVariableList<T> : IEnumerable<T>, IComparable where T : IComparable
+    public class ContinueVariableList<T> : Component, IEnumerable<T>, IComparable where T : IComparable
     {
         public IList<dynamic> _variables;
 
@@ -173,6 +173,11 @@ namespace Stats
             {
                 throw new InvalidCastException("Cannot comapre those type, sorry. See the git repo to add this comparaison"); ;
             }
+        }
+
+        public override dynamic[] GetArray()
+        {
+            return _variables.ToArray();
         }
     }
 }

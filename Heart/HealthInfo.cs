@@ -86,6 +86,19 @@ namespace Heart
             return hash.ToHashCode();
         }
 
+        public dynamic[] ToArray()
+        {
+            var properties = GetType().GetProperties();
+            dynamic[] vector = new dynamic[properties.Length];
+
+            for (int i = 0; i < properties.Length; i++)
+            {
+                vector[i] = properties[i].GetValue(this);
+            }
+
+            return vector;
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

@@ -40,7 +40,8 @@ namespace AI.Genetics
 
             for (int i = 0; i < 32; i++)
             {
-                otherChild |= firstChild & (1 << i);
+                if (Math.Pow(2, i) < Math.Max(value, otherParent.getT().value) && (value & (1 << i)) == ((otherParent.getT().value) & (1 << i)))
+                    otherChild |= (1 << i);
             }
 
             factors.Add(new Factor(otherChild));

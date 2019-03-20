@@ -66,8 +66,6 @@ namespace Heart
         {
             var data = DeserialiseData("../../../heart.csv");
 
-            int nbGoodPrediction = 0;
-
             data = new List<HealthInfo>()
             {
                 data.First(d => d.Target == 0),
@@ -75,60 +73,6 @@ namespace Heart
             };
 
             var agent = new Agent<HealthInfo>(data);
-
-            int nbLoop = 0;
-
-            double lastBestScore = 0;
-
-            while (nbGoodPrediction != data.Count)
-            {
-                int goodAnswer = 0;
-                foreach (var d in data)
-                {
-                    if (agent.Predict(d) == d.Target > 0)
-                    {
-                        goodAnswer++;
-                    }
-                }
-
-                if (lastBestScore < (double)goodAnswer / data.Count)
-                {
-                    Print("The agent beat is score at " + DateTime.Now.ToString());
-
-                    Print("The score of the agent is : " + (double)goodAnswer / data.Count);
-
-                    Print(agent);
-
-                    Print();
-
-                    lastBestScore = (double)goodAnswer / data.Count;
-                }
-
-                agent.ReceiveReward(new AI.Reinforcement.Reward(goodAnswer, data.Count));
-
-                agent.Train();
-
-                nbGoodPrediction = goodAnswer;
-
-                nbLoop++;
-
-                if (nbLoop % 250 == 0 || true)
-                {
-                    Print("The agent state at " + DateTime.Now.ToString());
-
-                    Print("The score of the agent is : " + (double)goodAnswer / data.Count);
-
-                    Print(agent);
-
-                    Print();
-                }
-
-                goodAnswer = 0;
-            }
-
-            Print("The agent succed! After " + nbLoop);
-
-            Console.ReadLine();
         }
     }
 }

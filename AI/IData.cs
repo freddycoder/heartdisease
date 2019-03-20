@@ -7,5 +7,7 @@ namespace AI
     public interface IData
     {
         int Target { get; set; }
+
+        dynamic[] ToArray();
     }
 }

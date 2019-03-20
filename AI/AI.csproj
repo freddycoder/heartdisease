@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Functions\Functions.csproj" />
     <ProjectReference Include="..\Genetic\Genetic.csproj" />
     <ProjectReference Include="..\QLearning\QLearning.csproj" />
     <ProjectReference Include="..\Stats\Stats.csproj" />

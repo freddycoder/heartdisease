@@ -49,7 +49,7 @@ namespace AI.Test
 
             var algo = new Agent<HealthInfo>(datas);
 
-            algo.Train();
+            algo.Train(a => a.TrainingScore() == 1);
 
             Assert.True(algo.Predict(datas.Find(h => h.Target == 1)));
             Assert.False(algo.Predict(datas.Find(h => h.Target == 0)));
