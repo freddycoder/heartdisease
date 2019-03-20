@@ -4,6 +4,7 @@ using Heart;
 using System.Linq;
 using System.Collections.Generic;
 using Xunit;
+using System;
 
 namespace Genetic.Test
 {
@@ -151,7 +152,7 @@ namespace Genetic.Test
 
                 foreach (var data in datas)
                 {
-                    if (function.F(pop, data.ToArray().SkipLast(1).ToArray()) > 0 && data.Target == 1)
+                    if (Convert.ToBoolean(function.F(pop, data.ToArray().SkipLast(1).ToArray()) > 0) == (data.Target == 1))
                     {
                         nbGoodPredriction++;
                     }
@@ -164,12 +165,13 @@ namespace Genetic.Test
                     indiv.nbExperiences += 2;
                     indiv.nbGoodExperiences += nbGoodPredriction;
                 }
-                nbGoodPredriction = 0;
 
                 if (nbGoodPredriction != datas.Count)
                 {
                     ag.startForGenerationCount(1);
                 }
+
+                nbGoodPredriction = 0;
             }
 
             for (int i = 0; i < 2; i++)
