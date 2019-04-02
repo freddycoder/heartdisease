@@ -9,13 +9,9 @@ namespace Heart
 {
     class Program
     {
-        /// <summary>
-        /// This gonna read the next line of a file and determine is each column 
-        /// has a matching property
-        /// </summary>
         static bool EveryColumnHasIsProperty(StreamReader streamReader, Type type)
         {
-            var columns = streamReader.ReadLine().Split(",");
+            var columns = streamReader.ReadLine().Split(";");
 
             bool isCorrect = columns.Length == type.GetProperties().Length;
 
@@ -43,9 +39,22 @@ namespace Heart
             return infos;
         }
 
+        static readonly Random _randEngine = new Random();
+
         static void Main(string[] args)
         {
             var data = DeserialiseData("../../../heart.csv");
+
+            List<HealthInfo> testData = new List<HealthInfo>();
+
+            for (int i = 0; i < 14; i++)
+            {
+                int index = _randEngine.Next(data.Count);
+
+                testData.Add(data[index]);
+
+                data.RemoveAt(index);
+            }
 
             var agent = new Agent<HealthInfo>();
 
@@ -59,28 +68,40 @@ namespace Heart
 
             int nbAgent = 1;
 
-            while (Nbsucces != data.Count)
+            while ((double)Nbsucces / data.Count < 0.84)
             {
-                for (int i = 0; i < 10; i++)
+                Nbsucces = 0;
+
+                for (int i = 0; i < 1; i++)
                 {
-                    agent.AddData(data);
+                    agent.TrainOnDatas(data);
                 }
 
                 foreach (var item in data)
                 {
-                    if (agent.MakePrediction(item) == (item.Target == 1))
+                    if ((agent.MakePrediction(item) > 0) == (item.Target == 1))
                     {
                         Nbsucces++;
                     }
                 }
 
-                if (Nbsucces >= bestNbSuccess)
+                if (Nbsucces > bestNbSuccess)
                 {
                     Console.WriteLine($"Last best result at : {DateTime.Now.ToString()}");
                     Console.WriteLine($"The agent made {Nbsucces} prediction succefully on a total of {data.Count} at run {run}.");
+                    Console.WriteLine($"This is accurate at {(double)Nbsucces / data.Count}");
 
                     Console.WriteLine($"The Agent spec");
                     Console.WriteLine(agent.ToString());
+
+                    Console.WriteLine("Result");
+                    Console.WriteLine($"{data[0].Header()} Prediction");
+                    foreach (var item in data)
+                    {
+                        Console.WriteLine($"{item.ToString()} {agent.MakePrediction(item)}");
+                    }
+
+                    Console.WriteLine($"This is accurate at {(double)Nbsucces / data.Count}");
 
                     bestNbSuccess = Nbsucces;
 
@@ -88,7 +109,7 @@ namespace Heart
                 }
                 nbRunSinceLastSuccess++;
 
-                if (nbRunSinceLastSuccess >= 250)
+                if (nbRunSinceLastSuccess >= 2500)
                 {
                     Random r = new Random();
                     if (r.Next() % 3 > 0)
@@ -108,10 +129,18 @@ namespace Heart
                 }
                 
                 run++;
-                Nbsucces = 0;
             }
 
-            Console.Write($"The tranning is complete after {run} run and {nbAgent} agents");
+            Console.WriteLine($"The tranning is complete after {run} run and {nbAgent} agents");
+            int dataEvaluation = 0;
+            foreach (var d in testData)
+            {
+                if ((agent.MakePrediction(d) > 0) == (d.Target > 0))
+                {
+                    dataEvaluation++;
+                }
+            }
+            Console.WriteLine($"Final score is {(double)dataEvaluation/testData.Count} or {dataEvaluation} / {testData.Count}");
             Console.ReadLine();
         }
     }

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace AI
 {
-    public class Agent<DataModel> where DataModel : IData
+    public class Agent<TDataModel> where TDataModel : IData
     {
         private readonly double[] _factors;
         private readonly double[] _bestFactor;
-        private readonly double[] _certitude;
         private readonly double[] _bestFactorLifeTime;
         private Dictionary<int, int[]> NbTimeValueEncounter { get; set; }
         private readonly int _vectorLenght;
@@ -20,15 +20,13 @@ namespace AI
         {
             _randomEngine = new Random();
 
-            _vectorLenght = typeof(DataModel).GetProperties().Length - 1;
+            _vectorLenght = typeof(TDataModel).GetProperties().Length - 1;
 
             _factors = new double[_vectorLenght];
 
             _bestFactor = new double[_vectorLenght];
 
             _bestFactorLifeTime = new double[_vectorLenght];
-
-            _certitude = new double[_vectorLenght];
 
             maxValue = 150;
 
@@ -37,7 +35,7 @@ namespace AI
             NbTimeValueEncounter = new Dictionary<int, int[]>();
         }
 
-        public Agent(Agent<DataModel> agent)
+        public Agent(Agent<TDataModel> agent)
         {
             _randomEngine = new Random();
 
@@ -45,27 +43,34 @@ namespace AI
 
             _factors = new double[_vectorLenght];
 
+            _bestFactor = new double[_vectorLenght];
+
+            _bestFactorLifeTime = new double[_vectorLenght];
+
             for (int i = 0; i < _vectorLenght; i++)
             {
                 _factors[i] = agent._bestFactorLifeTime[i];
             }
 
-            _bestFactor = new double[_vectorLenght];
-
-            _certitude = new double[_vectorLenght];
-
-            _bestFactorLifeTime = new double[_vectorLenght];
-
             NbTimeValueEncounter = new Dictionary<int, int[]>();
         }
 
-        public void AddData(List<DataModel> datas)
+        public Agent(double[] _vector)
+        {
+            Debug.Assert(typeof(TDataModel).GetProperties().Length - 1 == _vector.Length);
+
+            _vectorLenght = _vector.Length;
+
+            _factors = _vector;
+        }
+
+        public void TrainOnDatas(List<TDataModel> datas)
         {
             int nbCorrectPrediction = 0;
 
             foreach (var data in datas)
             {
-                bool prediction = MakePrediction(data);
+                bool prediction = MakePrediction(data) > 0;
 
                 if ((data.Target == 0 && prediction == false) || (data.Target == 1 && prediction == true))
                 {
@@ -121,21 +126,14 @@ namespace AI
             }
         }
 
-        public bool MakePrediction(DataModel data)
+        public double MakePrediction(TDataModel data)
         {
             double value = Calculate(data);
 
-            if (value >= 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return (2 / (1 + Math.Pow(Math.E, -value))) - 1;
         }
 
-        private double Calculate(DataModel data)
+        private double Calculate(TDataModel data)
         {
             int i = 0;
             double value = 0;
@@ -155,7 +153,7 @@ namespace AI
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("Index\t | Factor\t\t");
+            sb.Append("Agent\t");
             sb.Append(Environment.NewLine);
 
             for (int i = 0; i < _factors.Length; i++)

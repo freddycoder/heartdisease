@@ -10,7 +10,7 @@ namespace Heart
     {
         public HealthInfo(string textLine)
         {
-            var text = textLine.Split(",");
+            var text = textLine.Split(";");
 
             Debug.Assert(text.Length == this.GetType().GetProperties().Length);
 
@@ -88,16 +88,37 @@ namespace Heart
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            var reflectionOfMyslf = GetType().GetProperties();
+            var @this = GetType().GetProperties();
 
-            foreach (var prop in reflectionOfMyslf)
+            foreach (var prop in @this)
             {
-                sb.Append(prop.Name + ": " + prop.GetValue(this).ToString() + " | ");
+                if (prop.Name == "Target")
+                {
+                    int val = (int)prop.GetValue(this);
+                    if (val == 0) sb.Append("False\t");
+                    else sb.Append("True\t");
+                }
+                else
+                {
+                    sb.Append($"{prop.GetValue(this).ToString()}\t");
+                }
+
+                if (prop.Name == nameof(Trestbps)) sb.Append("\t");
             }
 
             return sb.ToString();
         }
 
-        
+        public string Header()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var prop in GetType().GetProperties())
+            {
+                sb.Append($"{prop.Name}\t");
+            }
+
+            return sb.ToString();
+        }
     }
 }
