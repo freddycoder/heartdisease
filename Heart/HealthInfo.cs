@@ -2,15 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Heart
 {
-    public class HealthInfo : IData
+    public class HealthInfo : IDataModel<int>
     {
-        public HealthInfo(string textLine)
+        public HealthInfo(string textLine, char separator)
         {
-            var text = textLine.Split(";");
+            var text = textLine.Split(separator);
 
             Debug.Assert(text.Length == this.GetType().GetProperties().Length);
 
@@ -119,6 +121,35 @@ namespace Heart
             }
 
             return sb.ToString();
+        }
+
+        public static List<HealthInfo> DeserialiseData(string path, char separator = ';')
+        {
+            StreamReader file = new StreamReader(path);
+
+            var infos = new List<HealthInfo>();
+
+            Debug.Assert(EveryColumnHasIsProperty(file, typeof(HealthInfo), separator));
+
+            while (!file.EndOfStream)
+            {
+                infos.Add(new HealthInfo(file.ReadLine(), separator));
+            }
+
+            return infos;
+        }
+        static bool EveryColumnHasIsProperty(StreamReader streamReader, Type type, char separator)
+        {
+            var columns = streamReader.ReadLine().Split(separator);
+
+            bool isCorrect = columns.Length == type.GetProperties().Length;
+
+            for (int i = 0; i < columns.Length && isCorrect; i++)
+            {
+                isCorrect = columns.Contains(type.GetProperties().ElementAt(i).Name.ToLower());
+            }
+
+            return isCorrect;
         }
     }
 }

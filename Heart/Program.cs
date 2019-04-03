@@ -1,62 +1,28 @@
 ﻿using AI;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 
 namespace Heart
 {
     class Program
     {
-        static bool EveryColumnHasIsProperty(StreamReader streamReader, Type type)
-        {
-            var columns = streamReader.ReadLine().Split(";");
-
-            bool isCorrect = columns.Length == type.GetProperties().Length;
-
-            for (int i = 0; i < columns.Length && isCorrect; i++)
-            {
-                isCorrect = columns.Contains(type.GetProperties().ElementAt(i).Name.ToLower());
-            }
-
-            return isCorrect;
-        }
-
-        static List<HealthInfo> DeserialiseData(string path)
-        {
-            StreamReader file = new StreamReader(path);
-
-            var infos = new List<HealthInfo>();
-
-            Debug.Assert(EveryColumnHasIsProperty(file, typeof(HealthInfo)));
-
-            while (!file.EndOfStream)
-            {
-                infos.Add(new HealthInfo(file.ReadLine()));
-            }
-
-            return infos;
-        }
-
         static readonly Random _randEngine = new Random();
+        static readonly string HEART_DATASET = "../../../Dataset/heart.csv";
+        static readonly string MIT_HEARTBEAT_DATASET = "../../../Dataset/mitbih_train.csv";
+        static readonly string MIT_HEARTBEAT_TEST_DATASET = "../../../Dataset/mitbih_test.csv";
 
         static void Main(string[] args)
         {
-            var data = DeserialiseData("../../../heart.csv");
+            var data = HeartBeatSound.DeserialiseData(MIT_HEARTBEAT_DATASET, ',');
 
-            List<HealthInfo> testData = new List<HealthInfo>();
-
-            for (int i = 0; i < 14; i++)
+            while (data.Count > 10000)
             {
-                int index = _randEngine.Next(data.Count);
-
-                testData.Add(data[index]);
-
-                data.RemoveAt(index);
+                data.RemoveAt(_randEngine.Next(data.Count - 1));
             }
 
-            var agent = new Agent<HealthInfo>();
+            var testData = HeartBeatSound.DeserialiseData(MIT_HEARTBEAT_TEST_DATASET, ',');
+
+            var agent = new Agent<HeartBeatSound>();
 
             int Nbsucces = 0;
 
@@ -68,7 +34,7 @@ namespace Heart
 
             int nbAgent = 1;
 
-            while ((double)Nbsucces / data.Count < 0.84)
+            while ((double)Nbsucces / data.Count < 0.99)
             {
                 Nbsucces = 0;
 
@@ -79,7 +45,7 @@ namespace Heart
 
                 foreach (var item in data)
                 {
-                    if ((agent.MakePrediction(item) > 0) == (item.Target == 1))
+                    if ((agent.MakePrediction(item) > 0) == (item.Target >= 1))
                     {
                         Nbsucces++;
                     }
@@ -96,9 +62,14 @@ namespace Heart
 
                     Console.WriteLine("Result");
                     Console.WriteLine($"{data[0].Header()} Prediction");
-                    foreach (var item in data)
+                    int lineToBePrintedCount = 303;
+                    for (int i = 0; i < data.Count; i++)
                     {
-                        Console.WriteLine($"{item.ToString()} {agent.MakePrediction(item)}");
+                        if (lineToBePrintedCount > 0 && (_randEngine.Next() % 303 == 0 || data.Count - i < lineToBePrintedCount))
+                        {
+                            Console.WriteLine($"{data[i].ToString()} {agent.MakePrediction(data[i])}");
+                            lineToBePrintedCount--;
+                        }
                     }
 
                     Console.WriteLine($"This is accurate at {(double)Nbsucces / data.Count}");
@@ -109,17 +80,17 @@ namespace Heart
                 }
                 nbRunSinceLastSuccess++;
 
-                if (nbRunSinceLastSuccess >= 2500)
+                if (nbRunSinceLastSuccess >= 10)
                 {
                     Random r = new Random();
                     if (r.Next() % 3 > 0)
                     {
-                        agent = new Agent<HealthInfo>(agent);
+                        agent = new Agent<HeartBeatSound>(agent);
                         Console.WriteLine($"New agent with transfert of knowledge");
                     }
                     else
                     {
-                        agent = new Agent<HealthInfo>();
+                        agent = new Agent<HeartBeatSound>();
                         Console.WriteLine($"New Agent at run {run}");
                     }
                     

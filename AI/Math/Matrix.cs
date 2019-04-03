@@ -1,11 +1,26 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace AI.Mathematics
 {
-    public class Matrix
+    public class Matrix : IEnumerable<double>
     {
         private readonly double[][] _array;
+        public static Matrix Identity(int m, int n)
+        {
+            var M = new Matrix(m, n);
 
+            for (int i = 0; i < M.LinesCount; i++)
+            {
+                for (int j = 0; j < M.ColumnsCount; j++)
+                {
+                    if (i == j) M[i][j] = 1.0;
+                }
+            }
+
+            return M;
+        }
         public Matrix(int m, int n)
         {
             if (m <= 0 || n <= 0)
@@ -19,6 +34,13 @@ namespace AI.Mathematics
             {
                 _array[i] = new double[n];
             }
+        }
+
+        public Matrix(double[] array)
+        {
+            _array = new double[1][];
+
+            _array[0] = array;
         }
 
         public int LinesCount { get => _array.Length; }
@@ -36,6 +58,51 @@ namespace AI.Mathematics
             }
         }
 
+        public void SetEachValueTo(double val)
+        {
+            for (int i = 0; i < LinesCount; i++)
+            {
+                for (int j = 0; j < ColumnsCount; j++)
+                {
+                    _array[i][j] = 0;
+                }
+            }
+        }
+
+        public IEnumerator<double> GetEnumerator()
+        {
+            for (int i = 0; i < LinesCount; i++)
+            {
+                for (int j = 0; j < ColumnsCount; j++)
+                {
+                    yield return _array[i][j];
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            for (int i = 0; i < LinesCount; i++)
+            {
+                yield return _array[i].GetEnumerator();
+            }
+        }
+
+        public Matrix Inverse()
+        {
+            var m = new Matrix(ColumnsCount, LinesCount);
+
+            for (int i = 0; i < LinesCount; i++)
+            {
+                for (int j = 0; j < LinesCount; j++)
+                {
+                    m[j][i] = this[i][j];
+                }
+            }
+
+            return m;
+        }
+
         public static Matrix operator * (Matrix X, Matrix Y)
         {
             if (X.ColumnsCount != Y.LinesCount)
@@ -49,7 +116,7 @@ namespace AI.Mathematics
             {
                 for (int j = 0; j < result.ColumnsCount; j++)
                 {
-                    for (int k = 0; k < X.LinesCount; k++)
+                    for (int k = 0; k < Y.LinesCount; k++)
                     {
                         result[i][j] += X[i][k] * Y[k][j];
                     }
@@ -57,6 +124,11 @@ namespace AI.Mathematics
             }
 
             return result;
+        }
+
+        public override string ToString()
+        {
+            return $"NbLines {LinesCount} NbColumns {ColumnsCount}";
         }
     }
 }

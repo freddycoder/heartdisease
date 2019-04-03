@@ -1,11 +1,12 @@
-﻿using System;
+﻿using AI.CalculateFunctions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
 namespace AI
 {
-    public class Agent<TDataModel> where TDataModel : IData
+    public class Agent<TDataModel> where TDataModel : IDataModel<int>
     {
         private readonly double[] _factors;
         private readonly double[] _bestFactor;
@@ -20,7 +21,16 @@ namespace AI
         {
             _randomEngine = new Random();
 
-            _vectorLenght = typeof(TDataModel).GetProperties().Length - 1;
+            maxValue = 10;
+
+            if (typeof(TDataModel).GetProperties().Length == 2)
+            {
+                _vectorLenght = _randomEngine.Next(maxValue) + 1;
+            }
+            else
+            {
+                _vectorLenght = typeof(TDataModel).GetProperties().Length - 1;
+            }
 
             _factors = new double[_vectorLenght];
 
@@ -52,6 +62,8 @@ namespace AI
                 _factors[i] = agent._bestFactorLifeTime[i];
             }
 
+            maxValue = agent.maxValue;
+
             NbTimeValueEncounter = new Dictionary<int, int[]>();
         }
 
@@ -70,12 +82,10 @@ namespace AI
 
             foreach (var data in datas)
             {
-                bool prediction = MakePrediction(data) > 0;
+                bool goodPredict = (MakePrediction(data) > 0) == (data.Target > 0);
 
-                if ((data.Target == 0 && prediction == false) || (data.Target == 1 && prediction == true))
+                if (goodPredict)
                 {
-                    nbCorrectPrediction++;
-
                     for (int i = 0; i < _vectorLenght; i++)
                     {
                         if (NbTimeValueEncounter.ContainsKey((int)_factors[i]))
@@ -101,52 +111,29 @@ namespace AI
                         _factors[i] += negatif * _randomEngine.Next(maxValue % Math.Max(1, nbTimeSee));
                     }
                 }
+
+                if (goodPredict) nbCorrectPrediction++;
             }
 
-            if (nbCorrectPrediction < datas.Count / 3)
-            {
-                GenerateNewValue(maxValue);
-                Forgot();                
-            }
-            else if (nbCorrectPrediction < nbCorrectPredictionBestScore)
-            {
-                for (int i = 0; i < _vectorLenght; i++)
-                {
-                    _factors[i] = _bestFactor[i];
-                }
-            }
-            else
-            {
-                nbCorrectPredictionBestScore = nbCorrectPrediction;
-                for (int i = 0; i < _vectorLenght; i++)
-                {
-                    _bestFactor[i] = _factors[i];
-                    _bestFactorLifeTime[i] = _bestFactor[i];
-                }
-            }
+            Retrospective(datas, nbCorrectPrediction);
         }
+
+        private IAgentCalculateFunction<TDataModel> dotproductOfEachProperty = new VectorDivisionForEachProp<TDataModel>();
+        private IAgentCalculateFunction<TDataModel> reduceArrayDotProduct = new ReduceArrayDotProduct<TDataModel>();
 
         public double MakePrediction(TDataModel data)
         {
-            double value = Calculate(data);
-
-            return (2 / (1 + Math.Pow(Math.E, -value))) - 1;
-        }
-
-        private double Calculate(TDataModel data)
-        {
-            int i = 0;
-            double value = 0;
-            foreach (var prop in data.GetType().GetProperties())
+            double value = 0.0;
+            if (data.GetType().GetProperties().Length > 2)
             {
-                if (prop.Name != "Target")
-                {
-                    value += double.Parse(prop.GetValue(data).ToString()) / _factors[i] == 0 ? 1 : _factors[i];
-                    i++;
-                }
+                value = dotproductOfEachProperty.Calculate(data, _factors);
+            }
+            else if (data.GetType().GetProperties().Length == 2)
+            {
+                value = reduceArrayDotProduct.Calculate(data, _factors);
             }
 
-            return value;
+            return (2 / (1 + Math.Pow(Math.E, -value))) - 1;
         }
 
         public override string ToString()
@@ -173,6 +160,31 @@ namespace AI
 
                 _factors[i] = negatif * _randomEngine.NextDouble() * (_randomEngine.Next() % max);
                 _bestFactor[i] = _factors[i];
+            }
+        }
+
+        private void Retrospective(List<TDataModel> datas, int nbCorrectPrediction)
+        {
+            if (nbCorrectPrediction < datas.Count / 3)
+            {
+                GenerateNewValue(maxValue);
+                Forgot();
+            }
+            else if (nbCorrectPrediction < nbCorrectPredictionBestScore)
+            {
+                for (int i = 0; i < _vectorLenght; i++)
+                {
+                    _factors[i] = _bestFactor[i];
+                }
+            }
+            else
+            {
+                nbCorrectPredictionBestScore = nbCorrectPrediction;
+                for (int i = 0; i < _vectorLenght; i++)
+                {
+                    _bestFactor[i] = _factors[i];
+                    _bestFactorLifeTime[i] = _bestFactor[i];
+                }
             }
         }
 
