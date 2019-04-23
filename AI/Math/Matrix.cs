@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace AI.Mathematics
 {
@@ -126,9 +127,33 @@ namespace AI.Mathematics
             return result;
         }
 
+        public static Matrix operator - (Matrix a, double b)
+        {
+            for (int i = 0; i < a.LinesCount; i++)
+            {
+                for (int j = 0; j < a.ColumnsCount; j++)
+                {
+                    a[i][j] -= b;
+                }
+            }
+
+            return a;
+        }
+
         public override string ToString()
         {
-            return $"NbLines {LinesCount} NbColumns {ColumnsCount}";
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < LinesCount; i++)
+            {
+                for (int j = 0; j < ColumnsCount; j++)
+                {
+                    sb.Append(this[i][j] + " ");
+                }
+                sb.Append(Environment.NewLine);
+            }
+
+            return sb.ToString();
         }
     }
 }

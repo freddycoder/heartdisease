@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AI.Mathematics;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,5 +9,6 @@ namespace AI
     {
         TargetType Target { get; set; }
         string Header();
+        Matrix GetFeatures();
     }
 }

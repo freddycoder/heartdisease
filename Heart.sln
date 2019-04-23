@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.438
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heart", "Heart\Heart.csproj", "{E1EB1163-777F-4090-884F-5952EEF8D046}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Heart", "Heart\Heart.csproj", "{E1EB1163-777F-4090-884F-5952EEF8D046}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI", "AI\AI.csproj", "{BEF907FC-7BD5-49A2-BB46-A8E8FF86BD63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AI", "AI\AI.csproj", "{BEF907FC-7BD5-49A2-BB46-A8E8FF86BD63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AITweaker", "AITweaker\AITweaker.csproj", "{2CC40AA5-DBAB-47F3-AC7E-2F906CF0E097}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{BEF907FC-7BD5-49A2-BB46-A8E8FF86BD63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEF907FC-7BD5-49A2-BB46-A8E8FF86BD63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEF907FC-7BD5-49A2-BB46-A8E8FF86BD63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CC40AA5-DBAB-47F3-AC7E-2F906CF0E097}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CC40AA5-DBAB-47F3-AC7E-2F906CF0E097}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CC40AA5-DBAB-47F3-AC7E-2F906CF0E097}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CC40AA5-DBAB-47F3-AC7E-2F906CF0E097}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

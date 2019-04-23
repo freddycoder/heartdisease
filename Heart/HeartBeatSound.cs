@@ -1,4 +1,5 @@
 ﻿using AI;
+using AI.Mathematics;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -70,6 +71,11 @@ namespace Heart
         public override string ToString()
         {
             return Target.ToString();
+        }
+
+        public Matrix GetFeatures()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

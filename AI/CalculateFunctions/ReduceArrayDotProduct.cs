@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace AI.CalculateFunctions
 {
-    public class ReduceArrayDotProduct<TDataModel> : IAgentCalculateFunction<TDataModel> where TDataModel : IDataModel<int>
+    public class ReduceArrayDotProduct<TDataModel> : ICalculateFunction<TDataModel> where TDataModel : IDataModel<int>
     {
         public double Calculate(TDataModel model, double[] factors)
         {

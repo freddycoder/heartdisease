@@ -1,9 +1,11 @@
 ﻿using AI;
+using AI.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Heart
@@ -150,6 +152,19 @@ namespace Heart
             }
 
             return isCorrect;
+        }
+
+        public Matrix GetFeatures()
+        {
+            var props = GetType().GetProperties().Where(p => p.Name != "Target").ToArray();
+            Matrix m = new Matrix(1, props.Length);
+
+            for (int i = 0; i < m.ColumnsCount; i++)
+            {
+                m[0][i] = double.Parse(props[i].GetValue(this).ToString());
+            }
+
+            return m;
         }
     }
 }

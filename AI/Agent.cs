@@ -1,205 +1,120 @@
-﻿using AI.CalculateFunctions;
+﻿using AI.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace AI
 {
-    public class Agent<TDataModel> where TDataModel : IDataModel<int>
+    public class Agent<TDataModel> : IAgent<TDataModel> where TDataModel : IDataModel<int>
     {
-        private readonly double[] _factors;
-        private readonly double[] _bestFactor;
-        private readonly double[] _bestFactorLifeTime;
-        private Dictionary<int, int[]> NbTimeValueEncounter { get; set; }
+        private Matrix _weights;
         private readonly int _vectorLenght;
-        private readonly Random _randomEngine;
-        private int nbCorrectPredictionBestScore;
         private int maxValue;
+        public double learningRate { get; set; } = 0.1;
+
+        static readonly Random _randomEngine = new Random();
 
         public Agent()
         {
-            _randomEngine = new Random();
+            _vectorLenght = typeof(TDataModel).GetProperties().Where(p => p.Name != "Target").Count();
 
-            maxValue = 10;
+            _weights = new Matrix(1, _vectorLenght);
 
-            if (typeof(TDataModel).GetProperties().Length == 2)
-            {
-                _vectorLenght = _randomEngine.Next(maxValue) + 1;
-            }
-            else
-            {
-                _vectorLenght = typeof(TDataModel).GetProperties().Length - 1;
-            }
-
-            _factors = new double[_vectorLenght];
-
-            _bestFactor = new double[_vectorLenght];
-
-            _bestFactorLifeTime = new double[_vectorLenght];
-
-            maxValue = 150;
+            maxValue = 100;
 
             GenerateNewValue(maxValue);
+        }
 
-            NbTimeValueEncounter = new Dictionary<int, int[]>();
+        public Agent(int nbLayer)
+        {
+            Debug.Assert(nbLayer > 0, "You must have at least one layer");
+
+            _vectorLenght = typeof(TDataModel).GetProperties().Where(p => p.Name != "Target").Count();
+
+            _weights = new Matrix(nbLayer, _vectorLenght);
+
+            maxValue = 100;
+
+            GenerateNewValue(maxValue);
         }
 
         public Agent(Agent<TDataModel> agent)
         {
-            _randomEngine = new Random();
-
             _vectorLenght = agent._vectorLenght;
 
-            _factors = new double[_vectorLenght];
-
-            _bestFactor = new double[_vectorLenght];
-
-            _bestFactorLifeTime = new double[_vectorLenght];
-
-            for (int i = 0; i < _vectorLenght; i++)
-            {
-                _factors[i] = agent._bestFactorLifeTime[i];
-            }
+            _weights = agent._weights;
 
             maxValue = agent.maxValue;
-
-            NbTimeValueEncounter = new Dictionary<int, int[]>();
         }
 
-        public Agent(double[] _vector)
+        public void Fit(List<TDataModel> datas)
         {
-            Debug.Assert(typeof(TDataModel).GetProperties().Length - 1 == _vector.Length);
-
-            _vectorLenght = _vector.Length;
-
-            _factors = _vector;
-        }
-
-        public void TrainOnDatas(List<TDataModel> datas)
-        {
-            int nbCorrectPrediction = 0;
-
-            foreach (var data in datas)
+            for (int i = 0; i < datas.Count; i++)
             {
-                bool goodPredict = (MakePrediction(data) > 0) == (data.Target > 0);
+                var error = 2 * (MakePrediction(datas[i]) - (2 * datas[i].Target - 1));
 
-                if (goodPredict)
+                var m = _randomEngine.Next(_weights.LinesCount);
+                var n = _randomEngine.Next(_weights.ColumnsCount);
+
+                _weights[m][n] -= 2 * learningRate * error;
+
+                var newError = 2 * (MakePrediction(datas[i]) - (2 * datas[i].Target - 1));
+
+                if (Math.Abs(newError) > Math.Abs(error))
                 {
-                    for (int i = 0; i < _vectorLenght; i++)
-                    {
-                        if (NbTimeValueEncounter.ContainsKey((int)_factors[i]))
-                        {
-                            NbTimeValueEncounter[(int)_factors[i]][i]++;
-                        }
-                        else
-                        {
-                            NbTimeValueEncounter.Add((int)_factors[i], new int[_vectorLenght]);
-                            NbTimeValueEncounter[(int)_factors[i]][i] = 1;
-                        }
-                    }
+                    _weights[m][n] += 2 * learningRate * error;
                 }
-                else
-                {
-                    for (int i = 0; i < _vectorLenght; i++)
-                    {
-                        int negatif = _randomEngine.Next() % 2 == 1 ? 1 : -1;
-
-                        int nbTimeSee = NbTimeValueEncounter.ContainsKey((int)_factors[i]) ?
-                            NbTimeValueEncounter[(int)_factors[i]][i] : 0;
-
-                        _factors[i] += negatif * _randomEngine.Next(maxValue % Math.Max(1, nbTimeSee));
-                    }
-                }
-
-                if (goodPredict) nbCorrectPrediction++;
             }
-
-            Retrospective(datas, nbCorrectPrediction);
         }
-
-        private IAgentCalculateFunction<TDataModel> dotproductOfEachProperty = new VectorDivisionForEachProp<TDataModel>();
-        private IAgentCalculateFunction<TDataModel> reduceArrayDotProduct = new ReduceArrayDotProduct<TDataModel>();
 
         public double MakePrediction(TDataModel data)
         {
-            double value = 0.0;
-            if (data.GetType().GetProperties().Length > 2)
+            Matrix f = data.GetFeatures();
+
+            for (int layer = 0; layer < _weights.LinesCount; layer++)
             {
-                value = dotproductOfEachProperty.Calculate(data, _factors);
-            }
-            else if (data.GetType().GetProperties().Length == 2)
-            {
-                value = reduceArrayDotProduct.Calculate(data, _factors);
+                Matrix t = new Matrix(f.LinesCount, f.ColumnsCount);
+
+                for (int feature = 0; feature < _weights.ColumnsCount; feature++)
+                {
+                    t[0][feature] = _weights[layer][feature] * f[0][feature];
+                }
+
+                f = t;
             }
 
-            return (2 / (1 + Math.Pow(Math.E, -value))) - 1;
+            return (2 / (1 + Math.Pow(Math.E, -f.Sum()))) - 1;
         }
 
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("Agent\t");
+            sb.Append("Agent weights\t");
             sb.Append(Environment.NewLine);
 
-            for (int i = 0; i < _factors.Length; i++)
-            {
-                sb.Append($"{i}\t | {_factors[i]}\t");
-                sb.Append(Environment.NewLine);
-            }
+            sb.Append(_weights.ToString());
 
             return sb.ToString();
         }
 
         private void GenerateNewValue(int max)
         {
-            for (int i = 0; i < _vectorLenght; i++)
+            for (int i = 0; i < _weights.LinesCount; i++)
             {
-                int negatif = _randomEngine.Next() % 2 == 1 ? 1 : -1;
-
-                _factors[i] = negatif * _randomEngine.NextDouble() * (_randomEngine.Next() % max);
-                _bestFactor[i] = _factors[i];
-            }
-        }
-
-        private void Retrospective(List<TDataModel> datas, int nbCorrectPrediction)
-        {
-            if (nbCorrectPrediction < datas.Count / 3)
-            {
-                GenerateNewValue(maxValue);
-                Forgot();
-            }
-            else if (nbCorrectPrediction < nbCorrectPredictionBestScore)
-            {
-                for (int i = 0; i < _vectorLenght; i++)
+                for (int j = 0; j < _weights.ColumnsCount; j++)
                 {
-                    _factors[i] = _bestFactor[i];
-                }
-            }
-            else
-            {
-                nbCorrectPredictionBestScore = nbCorrectPrediction;
-                for (int i = 0; i < _vectorLenght; i++)
-                {
-                    _bestFactor[i] = _factors[i];
-                    _bestFactorLifeTime[i] = _bestFactor[i];
+                    var negatif = _randomEngine.Next() % 2 == 1 ? 1 : -1;
+                    _weights[i][j] = negatif * (_randomEngine.NextDouble() * _randomEngine.Next() % max);
                 }
             }
         }
 
-        private void Forgot()
+        public Matrix GetWeights()
         {
-            foreach (var pair in NbTimeValueEncounter)
-            {
-                for (int i = 0; i < _vectorLenght; i++)
-                {
-                    if (pair.Value[i] > 1)
-                    {
-                        pair.Value[i] = (int)(pair.Value[i] / 1.5);
-                    }
-                }
-            }
+            return _weights;
         }
     }
 }

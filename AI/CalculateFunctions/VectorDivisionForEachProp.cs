@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AI.CalculateFunctions
 {
-    public class VectorDivisionForEachProp<TDataModel> : IAgentCalculateFunction<TDataModel> where TDataModel : IDataModel<int>
+    public class VectorDivisionForEachProp<TDataModel> : ICalculateFunction<TDataModel> where TDataModel : IDataModel<int>
     {
         public double Calculate(TDataModel model, double[] factors)
         {

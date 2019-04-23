@@ -13,16 +13,20 @@ namespace Heart
 
         static void Main(string[] args)
         {
-            var data = HeartBeatSound.DeserialiseData(MIT_HEARTBEAT_DATASET, ',');
+            var data = HealthInfo.DeserialiseData(HEART_DATASET, ';');
 
-            while (data.Count > 10000)
+            var testData = new List<HealthInfo>();
+
+            while (testData.Count < 15)
             {
-                data.RemoveAt(_randEngine.Next(data.Count - 1));
+                int index = _randEngine.Next(data.Count - 1);
+
+                testData.Add(data[index]);
+
+                data.RemoveAt(index);
             }
 
-            var testData = HeartBeatSound.DeserialiseData(MIT_HEARTBEAT_TEST_DATASET, ',');
-
-            var agent = new Agent<HeartBeatSound>();
+            var agent = new Agent<HealthInfo>(100);
 
             int Nbsucces = 0;
 
@@ -34,18 +38,18 @@ namespace Heart
 
             int nbAgent = 1;
 
-            while ((double)Nbsucces / data.Count < 0.99)
+            while ((double)Nbsucces / data.Count < 0.85)
             {
                 Nbsucces = 0;
 
                 for (int i = 0; i < 1; i++)
                 {
-                    agent.TrainOnDatas(data);
+                    agent.Fit(data);
                 }
 
                 foreach (var item in data)
                 {
-                    if ((agent.MakePrediction(item) > 0) == (item.Target >= 1))
+                    if ((agent.MakePrediction(item) > 0) == (item.Target > 0))
                     {
                         Nbsucces++;
                     }
@@ -80,20 +84,18 @@ namespace Heart
                 }
                 nbRunSinceLastSuccess++;
 
-                if (nbRunSinceLastSuccess >= 10)
+                if (nbRunSinceLastSuccess >= 500)
                 {
-                    Random r = new Random();
-                    if (r.Next() % 3 > 0)
-                    {
-                        agent = new Agent<HeartBeatSound>(agent);
-                        Console.WriteLine($"New agent with transfert of knowledge");
-                    }
-                    else
-                    {
-                        agent = new Agent<HeartBeatSound>();
+                    //if (_randEngine.Next() % 3 > 4)
+                    //{
+                    //    agent = new Agent<HealthInfo>(agent);
+                    //    Console.WriteLine($"New agent with transfert of knowledge");
+                    //}
+                    //else
+                    //{
+                        agent = new Agent<HealthInfo>(100);
                         Console.WriteLine($"New Agent at run {run}");
-                    }
-                    
+                    //}
                     
                     nbRunSinceLastSuccess = 0;
                     nbAgent++;
