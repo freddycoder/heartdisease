@@ -71,7 +71,7 @@ namespace AI
                 {
                     bestAcc = acc;
 
-                    Add(new MemoryAgent<TDataModel>());
+                    Add(new Agent<TDataModel>(100));
                 }
             }
         }
