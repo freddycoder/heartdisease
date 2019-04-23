@@ -17,7 +17,7 @@ namespace Heart
 
             var testData = new List<HealthInfo>();
 
-            while (testData.Count < 15)
+            while (testData.Count < 25)
             {
                 int index = _randEngine.Next(data.Count - 1);
 
@@ -26,7 +26,9 @@ namespace Heart
                 data.RemoveAt(index);
             }
 
-            var agent = new Agent<HealthInfo>(100);
+            var agent = new Boost<HealthInfo>();
+
+            agent.Add(new Agent<HealthInfo>(100));
 
             int Nbsucces = 0;
 
@@ -86,17 +88,13 @@ namespace Heart
 
                 if (nbRunSinceLastSuccess >= 500)
                 {
-                    //if (_randEngine.Next() % 3 > 4)
-                    //{
-                    //    agent = new Agent<HealthInfo>(agent);
-                    //    Console.WriteLine($"New agent with transfert of knowledge");
-                    //}
-                    //else
-                    //{
-                        agent = new Agent<HealthInfo>(100);
+                    if (_randEngine.Next() % 2 == 0)
+                    {
+                        agent = new Boost<HealthInfo>();
+                        agent.Add(new Agent<HealthInfo>(100));
                         Console.WriteLine($"New Agent at run {run}");
-                    //}
-                    
+                    }
+
                     nbRunSinceLastSuccess = 0;
                     nbAgent++;
                 }

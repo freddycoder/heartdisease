@@ -48,9 +48,31 @@ namespace AI
 
         public void Fit(List<TDataModel> datas, int nbEpoch)
         {
+            double acc = 0.0;
+            double bestAcc = 0.0;
             for (int i = 0; i < nbEpoch; i++)
             {
                 Fit(datas);
+
+                double nbGoodPRedict = 0.0;
+                foreach (var data in datas)
+                {
+                    var score = MakePrediction(data);
+
+                    if ((score > 0) == (data.Target > 0))
+                    {
+                        nbGoodPRedict++;
+                    }
+                }
+
+                acc = nbGoodPRedict / datas.Count;
+
+                if (acc > 0.75 && acc > bestAcc)
+                {
+                    bestAcc = acc;
+
+                    Add(new MemoryAgent<TDataModel>());
+                }
             }
         }
 
@@ -60,7 +82,7 @@ namespace AI
 
             for (int i = 0; i < Count; i++)
             {
-                _agents[i].Fit(datas);
+                _agents[_agents.Count - 1].Fit(datas);
 
                 foreach (var data in datas)
                 {
