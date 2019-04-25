@@ -15,7 +15,7 @@ This is the main librairy. For now, every algorythme is writen by me, but i want
 
 ## AITweaker
 
-This is a razor components app, so it is possible to play with the setting of the AI algoriythme with a UI.
+This is a razor components app, so it is possible to play with the setting of the AI algorythme with a UI.
 
 ## Heart
 
