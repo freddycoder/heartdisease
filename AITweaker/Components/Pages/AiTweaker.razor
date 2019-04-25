@@ -1,0 +1,107 @@
+@page "/aitweaker"
+@using AITweaker.Services
+@inject HealthInfoServices HealthInfoService
+
+<h1>AI Tweaker</h1>
+
+<div class="row">
+    <div class="form-group">
+        <button class="btn btn-primary d-inline" onclick="@IncrementCount">Execute one epoch</button>
+
+        <button class="btn btn-primary d-inline" onclick="@DoManyEpoch">Execute many epoch</button>
+        <label>How many : </label>
+        <input class="form-control d-inline col-2" type="number" min="1" bind="@nbEpochToRun" />
+    </div>
+</div>
+
+<div class="row">
+    <div class="form-group">
+        <button class="btn btn-primary d-inline" onclick="@GetNewAgent">Get new agent</button>
+        <label>Nb layer</label>
+        <input class="form-control d-inline col-4" type="number" min="1" bind="@nbLayer" />
+    </div>
+</div>
+
+<div class="row">
+    <div class="form-group">
+        <label>LearningRate</label>
+        <input class="form-control d-inline col-4" bind="@agent.learningRate" />
+    </div>
+</div>
+
+
+<p>Current epoch: @currentEpoch</p>
+<p>Accuracy : @acc</p>
+<p>Best accuracy : @bestAcc</p>
+
+<div class="row">
+    @for (int i = 0; i < agent.GetWeights().LinesCount; i++)
+    {
+        <div class="col-md-2">
+            <ul class="list-group mb-2">
+                @for (int j = 0; j < agent.GetWeights().ColumnsCount; j++)
+                {
+                    <li class="list-group-item">
+                        @agent.GetWeights()[i][j]
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>
+
+@functions {
+    int currentEpoch = 0;
+    int nbLayer = 1;
+    int nbEpochToRun = 1;
+    double bestAcc = 0.0;
+    AI.Agent<Heart.HealthInfo> agent = new AI.Agent<Heart.HealthInfo>();
+    double acc
+    {
+        get;
+        set;
+    }
+
+    void UpdateScores()
+    {
+        double g = 0.0;
+        foreach (var data in HealthInfoService.GetAllAsync().Result)
+        {
+            if ((agent.MakePrediction(data) > 0) == (data.Target > 0))
+            {
+                g++;
+            }
+        }
+
+        double t = g / HealthInfoService.GetAllAsync().Result.Count();
+
+        if (t > bestAcc)
+        {
+            bestAcc = t;
+        }
+
+        acc = t;
+    }
+
+    void IncrementCount()
+    {
+        agent.Fit(HealthInfoService.GetAllAsync().Result.ToList());
+
+        currentEpoch++;
+
+        UpdateScores();
+    }
+
+    void GetNewAgent()
+    {
+        agent = new AI.Agent<Heart.HealthInfo>(nbLayer);
+    }
+
+    void DoManyEpoch()
+    {
+        for (int i = 0; i < nbEpochToRun; i++)
+        {
+            IncrementCount();
+        }
+    }
+}

@@ -1,0 +1,45 @@
+@page "/fetchdata"
+@using AITweaker.Services
+@inject HealthInfoServices ForecastService
+
+<h1>Data</h1>
+
+<p>This is the dataset use for train the agent.</p>
+
+@if (healthinfos == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                @foreach (string s in HealthInfoServices.Summaries)
+                {
+                    <th>@s</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var healthinfo in healthinfos)
+            {
+                <tr>
+                    @foreach (var prop in healthinfo.GetType().GetProperties())
+                    {
+                        <td>@prop.GetValue(healthinfo).ToString()</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@functions {
+    Heart.HealthInfo[] healthinfos;
+
+    protected override async Task OnInitAsync()
+    {
+        healthinfos = await ForecastService.GetAllAsync();
+    }
+}

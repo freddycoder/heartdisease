@@ -1,17 +1,20 @@
 ﻿using AI;
+using AI.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Heart
 {
-    public class HealthInfo : IData
+    public class HealthInfo : IDataModel<int>
     {
-        public HealthInfo() { }
-        public HealthInfo(string textLine)
+        public HealthInfo(string textLine, char separator)
         {
-            var text = textLine.Split(",");
+            var text = textLine.Split(separator);
 
             Debug.Assert(text.Length == this.GetType().GetProperties().Length);
 
@@ -86,30 +89,82 @@ namespace Heart
             return hash.ToHashCode();
         }
 
-        public dynamic[] ToArray()
-        {
-            var properties = GetType().GetProperties();
-            dynamic[] vector = new dynamic[properties.Length];
-
-            for (int i = 0; i < properties.Length; i++)
-            {
-                vector[i] = properties[i].GetValue(this);
-            }
-
-            return vector;
-        }
-
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            var reflectionOfMyslf = GetType().GetProperties();
+            var @this = GetType().GetProperties();
 
-            foreach (var prop in reflectionOfMyslf)
+            foreach (var prop in @this)
             {
-                sb.Append(prop.Name + ": " + prop.GetValue(this).ToString() + " | ");
+                if (prop.Name == "Target")
+                {
+                    int val = (int)prop.GetValue(this);
+                    if (val == 0) sb.Append("False\t");
+                    else sb.Append("True\t");
+                }
+                else
+                {
+                    sb.Append($"{prop.GetValue(this).ToString()}\t");
+                }
+
+                if (prop.Name == nameof(Trestbps)) sb.Append("\t");
             }
 
             return sb.ToString();
+        }
+
+        public string Header()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var prop in GetType().GetProperties())
+            {
+                sb.Append($"{prop.Name}\t");
+            }
+
+            return sb.ToString();
+        }
+
+        public static List<HealthInfo> DeserialiseData(string path, char separator = ',')
+        {
+            StreamReader file = new StreamReader(path);
+
+            var infos = new List<HealthInfo>();
+
+            Debug.Assert(EveryColumnHasIsProperty(file, typeof(HealthInfo), separator));
+
+            while (!file.EndOfStream)
+            {
+                infos.Add(new HealthInfo(file.ReadLine(), separator));
+            }
+
+            return infos;
+        }
+        static bool EveryColumnHasIsProperty(StreamReader streamReader, Type type, char separator)
+        {
+            var columns = streamReader.ReadLine().Split(separator);
+
+            bool isCorrect = columns.Length == type.GetProperties().Length;
+
+            for (int i = 0; i < columns.Length && isCorrect; i++)
+            {
+                isCorrect = columns.Contains(type.GetProperties().ElementAt(i).Name.ToLower());
+            }
+
+            return isCorrect;
+        }
+
+        public Matrix GetFeatures()
+        {
+            var props = GetType().GetProperties().Where(p => p.Name != "Target").ToArray();
+            Matrix m = new Matrix(1, props.Length);
+
+            for (int i = 0; i < m.ColumnsCount; i++)
+            {
+                m[0][i] = double.Parse(props[i].GetValue(this).ToString());
+            }
+
+            return m;
         }
     }
 }
