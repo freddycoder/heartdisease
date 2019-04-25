@@ -27,6 +27,6 @@ This project also contains dataset. Here the source of those dataset :
 
 # WebSite
 
-Go to https://heartdiseasediagnosis.ca to try a train version of this agent. The agent that is execute is the release version of the origial branch which was train to get a accuracy of 0.83 on the dataset called heart.csv.
+Go to https://heartdiseasediagnosis.ca to try a train version of this agent. The agent that is execute is the release version of the original branch which was train to get a accuracy of 0.83 on the dataset called heart.csv.
 
 The code of this app is not in this repo for now because i need to secure some information first.
